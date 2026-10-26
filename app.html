@@ -35,11 +35,12 @@
   <aside class="app-side" id="appSide">
     <nav class="side-nav" id="sideNav">
       <a class="side-item active" data-view="dash"><i>01</i><span>工作台</span></a>
-      <a class="side-item" data-view="event"><i>02</i><span>新建事件</span></a>
-      <a class="side-item" data-view="clues"><i>03</i><span>线索识别</span></a>
-      <a class="side-item" data-view="dims"><i>04</i><span>四维研判</span></a>
-      <a class="side-item" data-view="legal"><i>05</i><span>法律与建议</span></a>
-      <a class="side-item" data-view="report"><i>06</i><span>复核与报告</span></a>
+      <a class="side-item" data-view="cases"><i>02</i><span>真实案例库</span></a>
+      <a class="side-item" data-view="event"><i>03</i><span>新建事件</span></a>
+      <a class="side-item" data-view="clues"><i>04</i><span>线索识别</span></a>
+      <a class="side-item" data-view="dims"><i>05</i><span>四维研判</span></a>
+      <a class="side-item" data-view="legal"><i>06</i><span>法律与建议</span></a>
+      <a class="side-item" data-view="report"><i>07</i><span>复核与报告</span></a>
     </nav>
     <div class="side-foot">
       <button class="btn-link" id="resetDemo">重置演示数据</button>
@@ -80,7 +81,25 @@
       </div>
     </section>
 
-    <!-- ========== 02 新建事件 ========== -->
+    <!-- ========== 02 真实案例库 ========== -->
+    <section class="view" id="view-cases">
+      <div class="view-head">
+        <div>
+          <h1>真实案例库</h1>
+          <p>依据权威公开报道与司法案例整理；评论样本为归纳模拟，非逐字引用</p>
+        </div>
+        <span class="hint">6 个案例 · 可一键载入研判</span>
+      </div>
+      <div class="notice-bar" style="margin-bottom:18px">
+        <span>📚 案例事实部分来自公开报道与司法文书摘要；待研判文本为“据公开报道归纳的模拟样本”，人物信息已模糊化，仅用于教学演示，避免对当事人造成二次伤害。</span>
+      </div>
+      <div class="case-lib" id="caseLib"></div>
+      <div class="step-actions">
+        <button class="btn btn-plain" data-goto="dash">← 返回工作台</button>
+      </div>
+    </section>
+
+    <!-- ========== 03 新建事件 ========== -->
     <section class="view" id="view-event">
       <div class="view-head">
         <div>
@@ -172,6 +191,7 @@
       </div>
       <div class="panel">
         <div class="panel-head"><h2>原文标注</h2><span class="hint">高亮为命中的疑似风险片段</span></div>
+        <div class="note-inline" id="clueNote" style="display:none"></div>
         <div class="mark-text" id="markText"></div>
       </div>
       <div class="panel">

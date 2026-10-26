@@ -250,6 +250,7 @@
   /* ---------------- 渲染：顶栏/导航 ---------------- */
   var VIEWS = [
     { id: 'dash', name: '工作台' },
+    { id: 'cases', name: '案例库' },
     { id: 'event', name: '新建事件' },
     { id: 'clues', name: '线索识别' },
     { id: 'dims', name: '四维研判' },
@@ -283,6 +284,7 @@
     $('#appSide').classList.remove('open');
     $('#sideMask').classList.remove('show');
     if (view === 'dash') renderDash();
+    if (view === 'cases') renderCases();
     if (view === 'event') loadFormFromCase();
     if (view === 'clues') renderClues();
     if (view === 'dims') renderDims();
@@ -341,6 +343,75 @@
       '<div><div class="stat-num">' + num + '</div><div class="stat-lab">' + lab + '</div></div></div>';
   }
 
+  /* ---------------- 渲染：真实案例库 ---------------- */
+  function renderCases() {
+    var box = $('#caseLib');
+    if (!box) return;
+    box.innerHTML = D.REAL_CASES.map(function (rc) {
+      var quotes = (rc.quotes || []).map(function (q) { return '<span class="q-chip">' + esc(q) + '</span>'; }).join('');
+      var refs = (rc.refs || []).map(function (r) {
+        return '<a class="law-link" href="' + r.u + '" target="_blank" rel="noopener">' + esc(r.t) + ' ↗</a>';
+      }).join(' ');
+      return '<article class="lib-card">' +
+        '<div class="lib-head">' +
+        '<h3>' + esc(rc.name) + '</h3>' +
+        '<span class="lib-time">' + fmtTime(rc.time) + '</span>' +
+        '</div>' +
+        '<div class="lib-chips">' +
+        '<span class="lib-fact">事实状态：' + esc(rc.fact) + '</span>' +
+        '<span class="lib-fact">通知情况：' + esc(rc.notice) + '</span>' +
+        '</div>' +
+        '<p class="lib-bg">' + esc(rc.background) + '</p>' +
+        '<div class="lib-sec"><b>典型攻击话语（公开报道归纳）</b><div class="q-list">' + quotes + '</div></div>' +
+        '<div class="lib-sec"><b>处置结果</b><p>' + esc(rc.outcome) + '</p></div>' +
+        '<div class="lib-sec"><b>研判价值</b><p>' + esc(rc.value) + '</p></div>' +
+        '<div class="lib-refs">' + refs + '</div>' +
+        '<div class="lib-actions">' +
+        '<button class="btn btn-primary btn-sm" data-loadcase="' + rc.id + '">载入此案例开始研判 →</button>' +
+        '<button class="btn btn-plain btn-sm" data-preview="' + rc.id + '">查看模拟评论样本</button>' +
+        '</div>' +
+        '<div class="lib-preview" id="pv-' + rc.id + '">' +
+        '<div class="pv-note">' + esc(rc.textNote) + '</div>' +
+        '<pre class="pv-text">' + esc(rc.text) + '</pre>' +
+        '</div>' +
+        '</article>';
+    }).join('');
+  }
+
+  function loadRealCase(rid) {
+    var rc = D.REAL_CASES.filter(function (x) { return x.id === rid; })[0];
+    if (!rc) return;
+    var c = {
+      id: uid(),
+      name: rc.name + '（案例库载入）',
+      time: rc.time,
+      fact: rc.fact,
+      background: rc.background,
+      text: rc.text,
+      source: rc.source,
+      measure: rc.measure,
+      notice: rc.notice,
+      attach: rc.attach,
+      createdAt: new Date().toISOString(),
+      status: 'progress',
+      isReal: true,
+      caseRef: rc.id,
+      textNote: rc.textNote
+    };
+    c.clues = runClues(c);
+    c.dims = computeDims(c);
+    c.grade = suggestGrade(c);
+    c.review = null;
+    c.records = [];
+    addRecord(c, 'machine', '系统', '由真实案例库载入「' + rc.name + '」并完成机器研判（' + c.clues.length + ' 条线索）');
+    addRecord(c, 'human', '录入人', '待研判文本为据公开报道归纳的模拟样本，非原文逐字引用');
+    state.cases.push(c);
+    setActive(c.id);
+    saveCases();
+    toast('已载入「' + rc.name + '」，识别线索 ' + activeClues(c).length + ' 条');
+    goto('clues');
+  }
+
   /* ---------------- 渲染：事件表单 ---------------- */
   function loadFormFromCase() {
     var c = activeCase();
@@ -385,6 +456,17 @@
   function renderClues() {
     var c = activeCase();
     if (!c) return;
+    // 案例库载入提示
+    var noteEl = $('#clueNote');
+    if (noteEl) {
+      if (c.textNote) {
+        noteEl.style.display = 'block';
+        noteEl.innerHTML = '📚 ' + esc(c.textNote);
+      } else {
+        noteEl.style.display = 'none';
+        noteEl.innerHTML = '';
+      }
+    }
     // 原文标注
     var text = c.text || '';
     var clues = (c.clues || []).slice().sort(function (a, b) { return a.start - b.start; });
@@ -570,7 +652,8 @@
       '<div><b>附件说明</b>' + esc(c.attach || '无') + '</div>' +
       '</div><p>' + esc(c.background) + '</p></div>' +
 
-      '<div class="rp-sec"><h3>二、材料来源</h3><p>' + esc(c.source) + '（来源不代表其内容当然真实）</p></div>' +
+      '<div class="rp-sec"><h3>二、材料来源</h3><p>' + esc(c.source) + '（来源不代表其内容当然真实）</p>' +
+      (c.textNote ? '<p class="hint">⚠ ' + esc(c.textNote) + '</p>' : '') + '</div>' +
 
       '<div class="rp-sec"><h3>三、线索识别结果</h3><table class="rp-table">' +
       '<tr><th>线索类别</th><th>命中片段</th><th>识别方式</th><th>状态</th></tr>' + rows + '</table></div>' +
@@ -630,6 +713,16 @@
         state.filter = ft.getAttribute('data-f');
         $$('.ftab').forEach(function (x) { x.classList.toggle('active', x === ft); });
         renderDash();
+        return;
+      }
+
+      // 案例库
+      var lc = e.target.closest('[data-loadcase]');
+      if (lc) { loadRealCase(lc.getAttribute('data-loadcase')); return; }
+      var pv = e.target.closest('[data-preview]');
+      if (pv) {
+        var pvBox = document.getElementById('pv-' + pv.getAttribute('data-preview'));
+        if (pvBox) pvBox.classList.toggle('open');
         return;
       }
 
