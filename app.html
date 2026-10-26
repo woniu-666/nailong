@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="“舆”法风险辅助研判系统 —— 面向事实未明型热点事件网络围攻的辅助研判 Web/H5 原型（教学演示）">
+<title>“舆”法风险辅助研判系统 · 演示原型</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<!-- ======= 顶栏 ======= -->
+<header class="app-top">
+  <div class="app-top-inner">
+    <a class="app-brand" href="index.html" title="返回项目主页">
+      <span class="brand-mark">舆</span>
+      <span class="brand-txt">“舆”法风险辅助研判系统<small>Web/H5 演示原型 V1.0</small></span>
+    </a>
+    <div class="top-case" id="topCase">
+      <span class="top-case-label">当前案件</span>
+      <span class="top-case-name" id="topCaseName">未选择</span>
+    </div>
+    <div class="top-actions">
+      <span class="demo-badge" title="系统输出均为演示数据，不构成法律意见">演示数据 · 非法律意见</span>
+      <button class="icon-btn only-mobile" id="mNavBtn" aria-label="打开导航">☰</button>
+    </div>
+  </div>
+  <div class="top-steps" id="topSteps"></div>
+</header>
+
+<!-- ======= 主体 ======= -->
+<div class="app-body">
+  <!-- 侧边导航 -->
+  <aside class="app-side" id="appSide">
+    <nav class="side-nav" id="sideNav">
+      <a class="side-item active" data-view="dash"><i>01</i><span>工作台</span></a>
+      <a class="side-item" data-view="event"><i>02</i><span>新建事件</span></a>
+      <a class="side-item" data-view="clues"><i>03</i><span>线索识别</span></a>
+      <a class="side-item" data-view="dims"><i>04</i><span>四维研判</span></a>
+      <a class="side-item" data-view="legal"><i>05</i><span>法律与建议</span></a>
+      <a class="side-item" data-view="report"><i>06</i><span>复核与报告</span></a>
+    </nav>
+    <div class="side-foot">
+      <button class="btn-link" id="resetDemo">重置演示数据</button>
+      <p>原型仅作教学研究演示<br>不替代司法认定与平台最终决定</p>
+    </div>
+  </aside>
+  <div class="side-mask" id="sideMask"></div>
+
+  <!-- 内容区 -->
+  <main class="app-main" id="appMain">
+
+    <!-- 免责提示 -->
+    <div class="notice-bar" id="noticeBar">
+      <span>⚠ 辅助研判结果不构成最终法律意见；风险颜色仅提示优先级，不暗示当事人有罪或内容必然违法。</span>
+      <button id="noticeClose" aria-label="关闭">×</button>
+    </div>
+
+    <!-- ========== 01 工作台 ========== -->
+    <section class="view active" id="view-dash">
+      <div class="view-head">
+        <div>
+          <h1>工作台</h1>
+          <p>管理研判案件，跟踪复核进度</p>
+        </div>
+        <button class="btn btn-primary" id="btnNewCase">＋ 新建研判</button>
+      </div>
+      <div class="stat-row" id="statRow"></div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>案件列表</h2>
+          <div class="filter-tabs" id="caseFilter">
+            <button class="ftab active" data-f="all">全部</button>
+            <button class="ftab" data-f="pending">待复核</button>
+            <button class="ftab" data-f="done">已复核</button>
+          </div>
+        </div>
+        <div class="case-list" id="caseList"></div>
+      </div>
+    </section>
+
+    <!-- ========== 02 新建事件 ========== -->
+    <section class="view" id="view-event">
+      <div class="view-head">
+        <div>
+          <h1>事件录入</h1>
+          <p>仅填写已知信息，注意区分事实与推测；建议使用中性描述，不预设责任结论</p>
+        </div>
+        <span class="req-note">* 为必填项</span>
+      </div>
+      <form class="panel form-panel" id="eventForm" novalidate>
+        <div class="form-grid">
+          <div class="field span-2">
+            <label for="fName">事件名称 <b>*</b></label>
+            <input id="fName" type="text" maxlength="60" placeholder="例：某高校图书馆占座争议事件（虚构演示）">
+            <em class="f-err" data-for="fName">请填写事件名称</em>
+          </div>
+          <div class="field">
+            <label for="fTime">事件发生/发现时间 <b>*</b></label>
+            <input id="fTime" type="datetime-local">
+            <em class="f-err" data-for="fTime">请选择时间</em>
+          </div>
+          <div class="field">
+            <label for="fFact">当前事实状态 <b>*</b></label>
+            <select id="fFact">
+              <option value="">请选择…</option>
+              <option>尚未核实</option>
+              <option>部分核实</option>
+              <option>已有权威信息</option>
+              <option>存在争议</option>
+            </select>
+            <em class="f-err" data-for="fFact">请选择事实状态</em>
+          </div>
+          <div class="field span-2">
+            <label for="fBg">事件背景 <b>*</b></label>
+            <textarea id="fBg" rows="4" placeholder="仅填写已知信息，区分事实与推测；不支持的内容请写入“待核实问题”"></textarea>
+            <em class="f-err" data-for="fBg">请填写事件背景</em>
+          </div>
+          <div class="field span-2">
+            <label for="fText">待研判文本 <b>*</b> <span class="label-tip">粘贴公开文本或经脱敏的模拟文本</span></label>
+            <textarea id="fText" rows="8" placeholder="粘贴需要研判的公开评论、帖子等文本…"></textarea>
+            <em class="f-err" data-for="fText">请粘贴待研判文本</em>
+          </div>
+          <div class="field span-2">
+            <label for="fSource">信息来源 <b>*</b> <span class="label-tip">网址 / 来源说明 / 材料名称；来源不代表其内容当然真实</span></label>
+            <input id="fSource" type="text" placeholder="例：某公开社交平台截图（脱敏）/ 学校通报链接">
+            <em class="f-err" data-for="fSource">请填写信息来源</em>
+          </div>
+          <div class="field">
+            <label for="fMeasure">已有平台措施</label>
+            <select id="fMeasure">
+              <option value="未知">未知</option>
+              <option>未处理</option>
+              <option>已提示</option>
+              <option>已审核</option>
+              <option>已限制传播</option>
+              <option>其他</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="fNotice">通知/投诉情况</label>
+            <select id="fNotice">
+              <option>未收到</option>
+              <option>已收到</option>
+              <option>情况不明</option>
+            </select>
+          </div>
+          <div class="field span-2">
+            <label for="fAttach">附件或证据说明</label>
+            <input id="fAttach" type="text" placeholder="第一版仅记录文件名称或来源摘要">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-plain" id="btnSaveDraft">保存草稿</button>
+          <button type="submit" class="btn btn-primary">保存并开始研判 →</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ========== 03 线索识别 ========== -->
+    <section class="view" id="view-clues">
+      <div class="view-head">
+        <div>
+          <h1>线索识别</h1>
+          <p>规则匹配结果仅是线索而非结论，每条均可回溯原文，支持人工纠正</p>
+        </div>
+        <div class="head-badges">
+          <span class="mbadge mb-machine">机器识别</span>
+          <span class="mbadge mb-human">人工确认</span>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>原文标注</h2><span class="hint">高亮为命中的疑似风险片段</span></div>
+        <div class="mark-text" id="markText"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>线索列表 <span class="count-chip" id="clueCount">0</span></h2><span class="hint">关键词命中只能作为线索，必须结合上下文判断</span></div>
+        <div class="clue-list" id="clueList"></div>
+      </div>
+      <div class="step-actions">
+        <button class="btn btn-plain" data-goto="event">← 返回修改事件</button>
+        <button class="btn btn-primary" data-goto="dims">四维研判 →</button>
+      </div>
+    </section>
+
+    <!-- ========== 04 四维研判 ========== -->
+    <section class="view" id="view-dims">
+      <div class="view-head">
+        <div>
+          <h1>四维研判</h1>
+          <p>四个维度独立呈现，不合并为单一分数；人工可调整结论并留痕</p>
+        </div>
+        <span class="hint">所有调整将记录到复核记录</span>
+      </div>
+      <div class="dim-grid" id="dimGrid"></div>
+      <div class="step-actions">
+        <button class="btn btn-plain" data-goto="clues">← 线索识别</button>
+        <button class="btn btn-primary" data-goto="legal">法律与建议 →</button>
+      </div>
+    </section>
+
+    <!-- ========== 05 法律与建议 ========== -->
+    <section class="view" id="view-legal">
+      <div class="view-head">
+        <div>
+          <h1>法律与处置建议</h1>
+          <p>条文来自可核验的规则库，点击可查看官方来源；系统不自动给出违法结论</p>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>可能相关的法律规范</h2><span class="hint">由命中的线索类别匹配</span></div>
+        <div class="law-list" id="lawList"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>与本案件相关的适用提示</h2></div>
+        <ul class="law-tips" id="lawTips"></ul>
+      </div>
+      <div class="step-actions">
+        <button class="btn btn-plain" data-goto="dims">← 四维研判</button>
+        <button class="btn btn-primary" data-goto="report">复核与报告 →</button>
+      </div>
+    </section>
+
+    <!-- ========== 06 复核与报告 ========== -->
+    <section class="view" id="view-report">
+      <div class="view-head">
+        <div>
+          <h1>分级与人工复核</h1>
+          <p>机器建议仅供参考，最终分级与结论由复核人确定并记录理由</p>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>风险分级</h2><span class="mbadge mb-machine">机器建议</span></div>
+        <div class="grade-suggest" id="gradeSuggest"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>人工复核 <span class="mbadge mb-human">人工确认</span></h2></div>
+        <form id="reviewForm" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="rReviewer">复核人 <b>*</b></label>
+              <input id="rReviewer" type="text" placeholder="复核人姓名/工号">
+              <em class="f-err" data-for="rReviewer">请填写复核人</em>
+            </div>
+            <div class="field">
+              <label for="rDecision">复核结论</label>
+              <select id="rDecision">
+                <option value="confirm">确认机器建议</option>
+                <option value="adjust">调整分级</option>
+                <option value="reject">驳回重审</option>
+              </select>
+            </div>
+            <div class="field" id="rGradeField" style="display:none">
+              <label for="rGrade">调整后分级</label>
+              <select id="rGrade">
+                <option value="1">一级 · 常规观察</option>
+                <option value="2">二级 · 重点关注</option>
+                <option value="3">三级 · 及时介入</option>
+                <option value="4">四级 · 紧急复核</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="rMeasures">建议措施</label>
+              <select id="rMeasures">
+                <option>保留正常讨论空间，持续观察</option>
+                <option>加强人工审核，核实来源，提示信息不确定性</option>
+                <option>优先人工复核，评估保护措施，保存必要证据</option>
+                <option>升级处理：限制传播、留存证据、报告上级/法务</option>
+                <option>其他（在理由中说明）</option>
+              </select>
+            </div>
+            <div class="field span-2">
+              <label for="rReason">复核理由 <b>*</b></label>
+              <textarea id="rReason" rows="3" placeholder="结合线索、语境、证据与规范说明您的判断依据"></textarea>
+              <em class="f-err" data-for="rReason">请填写复核理由</em>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">提交复核结论</button>
+          </div>
+        </form>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>操作记录</h2><span class="hint">机器输出、人工调整与时间全程留痕</span></div>
+        <ol class="record-list" id="recordList"></ol>
+      </div>
+      <div class="panel" id="reportPanel">
+        <div class="panel-head">
+          <h2>研判报告</h2>
+          <div class="head-actions">
+            <button class="btn btn-plain btn-sm" id="btnPrint">🖨 打印 / 导出 PDF</button>
+          </div>
+        </div>
+        <div id="reportEmpty" class="empty-tip">提交人工复核结论后可生成报告</div>
+        <div id="reportBody" class="report" style="display:none"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
