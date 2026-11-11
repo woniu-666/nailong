@@ -294,22 +294,29 @@ svg { display: block; }
 .dim-box {
   background: var(--surface); border: 1px solid var(--line); border-top: 4px solid var(--navy-600);
   border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 20px;
+  transition: box-shadow .2s;
 }
 .dim-box.d2 { border-top-color: var(--risk-2); }
 .dim-box.d3 { border-top-color: var(--risk-3); }
 .dim-box.d4 { border-top-color: var(--gold); }
+/* 卡片底色按风险级别填充 */
+.dim-box.dim-card-ds-ok   { background: var(--r1-bg); border-top-color: var(--risk-1); border-color: #D4E8D6; }
+.dim-box.dim-card-ds-mid  { background: var(--r2-bg); border-top-color: var(--risk-2); border-color: #EDDDB8; }
+.dim-box.dim-card-ds-high { background: var(--r3-bg); border-top-color: var(--risk-3); border-color: #F5C7B6; }
+.dim-box.dim-card-ds-crit { background: var(--r4-bg); border-top-color: var(--risk-4); border-color: #E8B5B1; }
 .dim-box-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
 .dim-box-head h3 { font-size: 16px; }
 .dim-status {
-  font-size: 12px; font-weight: 700; padding: 3px 12px; border-radius: 999px;
+  font-size: 18px; font-weight: 800; padding: 4px 16px; border-radius: 999px;
+  letter-spacing: .5px; box-shadow: 0 2px 8px rgba(0,0,0,.08);
 }
-.ds-ok { background: var(--r1-bg); color: var(--risk-1); }
-.ds-mid { background: var(--r2-bg); color: var(--risk-2); }
-.ds-high { background: var(--r3-bg); color: var(--risk-3); }
-.ds-crit { background: var(--r4-bg); color: var(--risk-4); }
+.ds-ok { background: var(--risk-1); color: #fff; }
+.ds-mid { background: var(--risk-2); color: #fff; }
+.ds-high { background: var(--risk-3); color: #fff; }
+.ds-crit { background: var(--risk-4); color: #fff; }
 .dim-obs { font-size: 13px; color: var(--ink-2); margin-bottom: 10px; }
 .dim-obs b { color: var(--ink); }
-.dim-reason { font-size: 13px; color: var(--ink-2); background: #F6F8FC; border-radius: 8px; padding: 8px 12px; margin-bottom: 10px; }
+.dim-reason { font-size: 13px; color: var(--ink-2); background: rgba(255,255,255,.55); border-radius: 8px; padding: 8px 12px; margin-bottom: 10px; }
 .dim-todo { font-size: 12.5px; color: var(--ink-3); }
 .dim-todo b { color: var(--risk-2); font-weight: 600; }
 .dim-adjust { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -420,6 +427,9 @@ svg { display: block; }
 .parse-tag.tag-auto { background: #E8EEFC; color: var(--navy-500); }
 .parse-tag.tag-unknown { background: #FFF0E0; color: #C47A32; }
 .parse-tag.tag-user { background: #F7EEDB; color: #8A6A2E; }
+.parse-tip {
+  font-size: 11.5px; color: var(--ink-3); margin-top: 4px;
+}
 
 @media (max-width: 600px) {
   .disposal-grid { grid-template-columns: 1fr; }

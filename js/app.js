@@ -530,18 +530,32 @@
       var d = c.dims[m.key];
       if (!d) return '';
       var shown = dimDisplay(m.key, d);
+      var cls = dimClsMap(m.key, shown);
       var opts = DIM_OPTIONS[m.key].map(function (o) {
         return '<option' + (o === shown ? ' selected' : '') + '>' + o + '</option>';
       }).join('');
-      return '<div class="dim-box ' + (m.key === 'd1' ? '' : m.key) + '">' +
+      return '<div class="dim-box dim-card-' + cls + '">' +
         '<div class="dim-box-head"><h3>' + m.title + '</h3>' +
-        '<span class="dim-status ' + dimClsMap(m.key, shown) + '">' + esc(shown) + '</span></div>' +
+        '<span class="dim-status ' + cls + '">' + esc(shown) + '</span></div>' +
         '<p class="dim-obs">' + m.obs + '</p>' +
         '<p class="dim-reason">' + esc(d.why) + '</p>' +
         '<p class="dim-todo"><b>待核实：</b>' + esc(d.todo) + '</p>' +
         '<div class="dim-adjust"><label>人工调整结论：</label>' +
         '<select data-dim="' + m.key + '">' + opts + '</select></div>' +
         '<p class="dim-note-mini">' + m.note + '</p>' +
+        '</div>';
+    }).join('');
+
+    // 四类处置提示（根据分级高亮当前级别）
+    var g = c.review ? c.review.grade : c.grade;
+    var disposalKey = ({ 1: '常规关注', 2: '重点核查', 3: '及时干预', 4: '紧急处置' })[g] || '常规关注';
+    $('#disposalGrid').innerHTML = D.DISPOSAL_LEVELS.map(function (d) {
+      var active = d.key === disposalKey;
+      return '<div class="disposal-card' + (active ? ' active' : '') + '" style="--dis-color:' + d.color + ';--dis-bg:' + d.bg + '">' +
+        '<div class="dis-head"><h3>' + esc(d.key) + '</h3>' +
+        (active ? '<span class="dis-tag">当前建议</span>' : '') + '</div>' +
+        '<p class="dis-desc">' + esc(d.desc) + '</p>' +
+        '<div class="dis-clause">' + esc(d.clause) + '</div>' +
         '</div>';
     }).join('');
   }
@@ -613,18 +627,6 @@
     var measures = D.MEASURE_TEMPLATE[g] || D.MEASURE_TEMPLATE[1];
     $('#measureList').innerHTML = measures.map(function (m, i) {
       return '<li><span class="m-idx">' + (i + 1) + '</span>' + esc(m) + '</li>';
-    }).join('');
-
-    // 模块六：四类处置提示（根据分级高亮当前级别）
-    var disposalKey = ({ 1: '常规关注', 2: '重点核查', 3: '及时干预', 4: '紧急处置' })[g] || '常规关注';
-    $('#disposalGrid').innerHTML = D.DISPOSAL_LEVELS.map(function (d) {
-      var active = d.key === disposalKey;
-      return '<div class="disposal-card' + (active ? ' active' : '') + '" style="--dis-color:' + d.color + ';--dis-bg:' + d.bg + '">' +
-        '<div class="dis-head"><h3>' + esc(d.key) + '</h3>' +
-        (active ? '<span class="dis-tag">当前建议</span>' : '') + '</div>' +
-        '<p class="dis-desc">' + esc(d.desc) + '</p>' +
-        '<div class="dis-clause">' + esc(d.clause) + '</div>' +
-        '</div>';
     }).join('');
   }
 
@@ -971,10 +973,11 @@
       $('#parsedPlatform').value = r.platform;
       $('#parsedPubTime').value = r.pubTime;
       $('#parsedBody').value = r.body;
+      $('#parsedBackgroundNote').value = r.backgroundNote || '';
       $('#parsedUrl').value = r.url;
       $('#parsedCapturedAt').value = r.capturedAt;
       $('#linkResult').style.display = 'block';
-      toast('解析完成：已从平台启发式提取标题/来源；时间标注为"未获取"（前端演示）');
+      toast('解析完成：已从平台启发式提取标题/来源，并生成背景摘要；时间标注为"未获取"（前端演示）');
     });
 
     $('#btnReparseLink').addEventListener('click', function () {
@@ -997,7 +1000,9 @@
         name: title.length > 40 ? title.slice(0, 40) + '…' : title,
         time: pubTime || capturedAt,
         fact: '尚未核实',
-        background: '来源平台：' + (platform || '未识别') + '；原始链接：' + url +
+        background: '来源平台：' + (platform || '未识别') +
+          ($('#parsedBackgroundNote') ? '；平台特性：' + $('#parsedBackgroundNote').value.trim() : '') +
+          '；原始链接：' + url +
           (note ? '；补充说明：' + note : '') + '；采集时间：' + capturedAt,
         text: body,
         source: url + '（链接导入，前端演示解析）',
@@ -1048,16 +1053,31 @@
     else if (host.indexOf('court.gov') !== -1 || host.indexOf('rmfyb') !== -1) platform = '人民法院 / 最高法';
     else if (host.indexOf('thepaper') === -1 && host.indexOf('.cn') !== -1) platform = '中文网站（未识别）';
 
-    var title = '关于该链接内容的研判需求（前端演示）';
-    var body = '前端演示版无法实际抓取网页内容，请在此粘贴页面正文或核心评论内容。\n\n如：“这种人就是人品有问题，别洗了。” “都去她学校堵她。”';
+        var urlHint = '';
+    try {
+      var segs = new URL(url).pathname.split('/').filter(function (s) { return s.length > 4; });
+      if (segs.length > 0) urlHint = segs[0].replace(/[-_]/g, ' ').slice(0, 30);
+    } catch (e) {}
+    var platformTip = '请粘贴页面正文或核心评论。示例：「这种人就是人品有问题，别洗了。」「人肉她，都去堵她。」';
+    var platformIntro = platform + '内容，风险类型需人工关注。';
+    if (platform === '微博') { platformIntro = '微博公开帖子/评论区，传播快、匿名性强。'; platformTip = '请粘贴微博正文或热门评论。示例风险评论：陪酒女！人渣！人肉她都去堵她。怎么不去死。'; }
+    else if (platform === '澎湃新闻') { platformIntro = '澎湃新闻公开报道，事实性较强，评论区可能情绪化。'; platformTip = '请粘贴新闻评论区。示例：楼主洗地呢？都去单位举报。'; }
+    else if (platform === '知乎') { platformIntro = '知乎问答/评论，讨论相对理性但仍有人肉风险。'; platformTip = '请粘贴知乎评论。示例：扒一下答主XX学校XX专业。已联系他单位。'; }
+    else if (platform === '小红书') { platformIntro = '小红书笔记/评论，外貌羞辱、隐私挖掘风险高。'; platformTip = '请粘贴小红书评论。示例：长这样还敢发。住XX小区。'; }
+    else if (platform === '抖音') { platformIntro = '抖音视频评论，用户量大传播极快。'; platformTip = '请粘贴抖音热门评论。示例：人肉她都去学校堵。举报她封号。'; }
+    else if (platform === '哔哩哔哩') { platformIntro = 'B站视频/评论，组织性网暴风险。'; platformTip = '请粘贴B站评论。示例：扒UP主学校。冲去骂她。'; }
+    else if (platform === '国家网信办' || platform === '人民法院 / 最高法') { platformIntro = '权威来源，重点关注评论区异常扩散。'; }
+    var title = (urlHint ? '「' + urlHint + '」' : '') + platform + '链接事件研判';
+    var body = platformTip;
+    var backgroundNote = platformIntro;
 
     return {
       url: url,
       platform: platform,
-      title: title + ' · ' + platform + '链接',
+      title: title,
       pubTime: '',
       body: body,
-      capturedAt: capturedAt
+      capturedAt: capturedAt, backgroundNote: backgroundNote
     };
   }
 

@@ -212,6 +212,11 @@
               <textarea id="parsedBody" rows="8"></textarea>
             </div>
             <div class="field span-2">
+              <label>平台特性 / 事件背景摘要 <span class="parse-tag tag-auto">智能总结</span></label>
+              <textarea id="parsedBackgroundNote" rows="3" readonly></textarea>
+              <span class="parse-tip">系统根据平台自动生成的背景摘要，仅作参考，可结合实际情况修改补充</span>
+            </div>
+            <div class="field span-2">
               <label>原始链接 <span class="parse-tag tag-auto">自动保留</span></label>
               <input id="parsedUrl" type="text" readonly />
             </div>
@@ -269,6 +274,11 @@
         <span class="hint">所有调整将记录到复核记录</span>
       </div>
       <div class="dim-grid" id="dimGrid"></div>
+      <!-- 四类处置提示：结合四维研判结果给出当前建议 -->
+      <div class="panel">
+        <div class="panel-head"><h2>四类处置提示</h2><span class="hint">结合当前研判结果，高亮当前建议级别；仅供参考，非法律责任等级</span></div>
+        <div class="disposal-grid" id="disposalGrid"></div>
+      </div>
       <div class="step-actions">
         <button class="btn btn-plain" data-goto="clues">← 线索识别</button>
         <button class="btn btn-primary" data-goto="legal">法律与建议 →</button>
@@ -308,12 +318,7 @@
         <div class="panel-head"><h2>五、建议采取的措施</h2><span class="hint">与风险级别相称，优先可逆措施</span></div>
         <ul class="measure-list" id="measureList"></ul>
       </div>
-      <!-- 模块六：四类处置提示 -->
-      <div class="panel">
-        <div class="panel-head"><h2>六、四类处置提示</h2><span class="hint">系统辅助建议，非法律责任等级</span></div>
-        <div class="disposal-grid" id="disposalGrid"></div>
-      </div>
-      <!-- 模块七：法律边界说明 -->
+      <!-- 模块六：法律边界说明 -->
       <div class="panel panel-warn" id="panelLegalBoundary">
         <div class="panel-head"><h2>⚠ 法律边界</h2></div>
         <div class="legal-boundary" id="legalBoundary">
