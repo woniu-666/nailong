@@ -546,27 +546,86 @@
     }).join('');
   }
 
-  /* ---------------- 渲染：法律与建议 ---------------- */
+  /* ---------------- 渲染：法律与建议（7 模块） ---------------- */
   function renderLegal() {
     var c = activeCase();
     if (!c) return;
+    var cats = {};
+    activeClues(c).forEach(function (x) { if (x.status !== 'rejected') cats[x.cat] = true; });
+    var catKeys = Object.keys(cats);
+
+    // 模块一：涉及的法律问题
+    var issueHtml = '';
+    D.LEGAL_ISSUES.forEach(function (li) {
+      if (cats[li.key]) {
+        issueHtml += '<div class="issue-card">' +
+          '<div class="issue-key" style="border-left:4px solid ' + li.color + ';color:' + li.color + '">' + esc(li.key) + '</div>' +
+          '<ul class="issue-list">' + li.issues.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul>' +
+          '</div>';
+      }
+    });
+    $('#legalIssues').innerHTML = issueHtml || '<div class="empty-tip">暂未匹配到明确法律问题（可能未命中任何风险线索，或线索已被人工驳回）。</div>';
+
+    // 模块二：法律依据与适用条件
     var laws = matchedLaws(c);
     $('#lawList').innerHTML = laws.length ? laws.map(function (l) {
       return '<div class="law-item">' +
         '<div class="law-item-top"><h3>' + esc(l.name) + '</h3><span class="law-tag">' + esc(l.tag) + '</span></div>' +
         '<p><b>条文摘要：</b>' + l.summary + '</p>' +
-        '<p><b>适用提示：</b>' + esc(l.apply) + '</p>' +
+        '<p><b>适用条件：</b>' + esc(l.apply) + '</p>' +
         '<a class="law-link" href="' + l.link + '" target="_blank" rel="noopener">查看官方来源 ↗</a>' +
         '</div>';
     }).join('') : '<div class="empty-tip">未命中风险线索，暂无匹配规范。可返回补充文本或人工研判。</div>';
 
-    var tips = [
-      '<b>边界提示：</b>关键词命中只能作为线索，讽刺、反问、新闻引用、合理批评或转述他人言论可能产生误判，请结合上下文判断。',
-      '<b>相称性原则：</b>处置措施应与风险紧迫性、损害程度和可逆性相称，优先采用可逆的温和措施。',
-      '<b>程序要求：</b>处置过程应留存记录，保障用户申诉与复核渠道；高风险措施应由授权人员执行。',
-      '<b>禁止事项：</b>不得仅依据观点立场、情绪强度或事件热度判定高风险；不得由 AI 自动实施账号处罚或内容删除。'
-    ];
-    $('#lawTips').innerHTML = tips.map(function (t) { return '<li>' + t + '</li>'; }).join('');
+    // 模块三：待核实事实
+    var factItems = [];
+    catKeys.forEach(function (k) {
+      var tpl = D.FACT_CHECKLIST_TEMPLATE[k];
+      if (tpl) tpl.forEach(function (t) { factItems.push({ cat: k, text: t }); });
+    });
+    D.FACT_CHECKLIST_TEMPLATE['通用'].forEach(function (t) { factItems.push({ cat: '通用', text: t }); });
+    // 去重
+    var seen = {};
+    factItems = factItems.filter(function (x) { if (seen[x.text]) return false; seen[x.text] = true; return true; });
+    $('#factChecklist').innerHTML = factItems.length ?
+      factItems.map(function (f) {
+        var mark = f.cat === '通用' ? '<span class="fcat fcat-gen">通用</span>' : '<span class="fcat fcat-key">' + esc(f.cat) + '</span>';
+        return '<li>' + mark + esc(f.text) + '</li>';
+      }).join('') : '<div class="empty-tip">暂无需核实的事项。</div>';
+
+    // 模块四：初步法律分析
+    var analysisHtml = '';
+    catKeys.forEach(function (k) {
+      var tpl = D.LEGAL_ANALYSIS_TEMPLATE[k];
+      if (tpl) {
+        analysisHtml += '<div class="analysis-block"><h4>针对「' + esc(k) + '」的方向性判断</h4><p>' + esc(tpl) + '</p></div>';
+      }
+    });
+    analysisHtml += '<div class="analysis-block"><h4>关于本案件的整体判断</h4>' +
+      '<p>本案件当前事实状态为<b>"' + esc(c.fact) + '"</b>，综合命中的线索类别（' + esc(catKeys.join('、') || '无') + '）与分级建议（' + c.grade + ' 级），初步判断平台注意义务触发点为<b>' + (c.notice === '已收到' ? '已收到通知' : c.notice === '未收到' ? '未收到通知但可能"应当知道"' : '通知情况不明') + '</b>。</p>' +
+      (c.notice === '已收到' ? '<p>通知已收到的情况下，平台需进一步核查：通知是否具备"通知—删除"规则要求的要件（通知人身份、侵权内容网址、初步证据）、平台响应时间是否合理、已采取措施是否必要相称。</p>' :
+        c.notice === '未收到' ? '<p>未收到通知但内容可能具有明显侵权特征时，需评估是否构成"应当知道"——这是《民法典》第1194条下平台注意义务的另一触发点，要求结合内容明显程度、传播量级、平台监测能力等因素综合判断。</p>' : '') +
+      '</div>';
+    $('#legalAnalysis').innerHTML = analysisHtml || '<div class="empty-tip">暂未形成法律分析（无线索命中）。</div>';
+
+    // 模块五：建议措施（按当前分级）
+    var g = c.review ? c.review.grade : c.grade;
+    var measures = D.MEASURE_TEMPLATE[g] || D.MEASURE_TEMPLATE[1];
+    $('#measureList').innerHTML = measures.map(function (m, i) {
+      return '<li><span class="m-idx">' + (i + 1) + '</span>' + esc(m) + '</li>';
+    }).join('');
+
+    // 模块六：四类处置提示（根据分级高亮当前级别）
+    var disposalKey = ({ 1: '常规关注', 2: '重点核查', 3: '及时干预', 4: '紧急处置' })[g] || '常规关注';
+    $('#disposalGrid').innerHTML = D.DISPOSAL_LEVELS.map(function (d) {
+      var active = d.key === disposalKey;
+      return '<div class="disposal-card' + (active ? ' active' : '') + '" style="--dis-color:' + d.color + ';--dis-bg:' + d.bg + '">' +
+        '<div class="dis-head"><h3>' + esc(d.key) + '</h3>' +
+        (active ? '<span class="dis-tag">当前建议</span>' : '') + '</div>' +
+        '<p class="dis-desc">' + esc(d.desc) + '</p>' +
+        '<div class="dis-clause">' + esc(d.clause) + '</div>' +
+        '</div>';
+    }).join('');
   }
 
   /* ---------------- 渲染：复核与报告 ---------------- */
@@ -891,9 +950,118 @@
       goto('dash');
     });
 
+    // 链接导入 tab 切换
+    $$('.import-tab').forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        $$('.import-tab').forEach(function (t) { t.classList.remove('active'); });
+        tab.classList.add('active');
+        var which = tab.getAttribute('data-import');
+        $('#importManual').classList.toggle('active', which === 'manual');
+        $('#importLink').classList.toggle('active', which === 'link');
+      });
+    });
+
+    // 解析链接（前端模拟：启发式提取）
+    $('#btnParseLink').addEventListener('click', function () {
+      var url = $('#linkUrl').value.trim();
+      if (!url) { toast('请先粘贴链接', 'err'); return; }
+      if (!/^https?:\/\//i.test(url)) { toast('请输入 http:// 或 https:// 开头的完整链接', 'err'); return; }
+      var r = parseLinkHeuristic(url);
+      $('#parsedTitle').value = r.title;
+      $('#parsedPlatform').value = r.platform;
+      $('#parsedPubTime').value = r.pubTime;
+      $('#parsedBody').value = r.body;
+      $('#parsedUrl').value = r.url;
+      $('#parsedCapturedAt').value = r.capturedAt;
+      $('#linkResult').style.display = 'block';
+      toast('解析完成：已从平台启发式提取标题/来源；时间标注为"未获取"（前端演示）');
+    });
+
+    $('#btnReparseLink').addEventListener('click', function () {
+      $('#linkResult').style.display = 'none';
+      $('#linkUrl').focus();
+    });
+
+    // 确认链接导入 → 生成案件
+    $('#btnLinkToForm').addEventListener('click', function () {
+      var title = $('#parsedTitle').value.trim();
+      var platform = $('#parsedPlatform').value.trim();
+      var body = $('#parsedBody').value.trim();
+      var note = $('#parsedNote').value.trim();
+      if (!title || !body) { toast('标题和正文不能为空', 'err'); return; }
+      var url = $('#parsedUrl').value.trim();
+      var pubTime = $('#parsedPubTime').value.trim();
+      var capturedAt = $('#parsedCapturedAt').value.trim();
+      var c = {
+        id: uid(),
+        name: title.length > 40 ? title.slice(0, 40) + '…' : title,
+        time: pubTime || capturedAt,
+        fact: '尚未核实',
+        background: '来源平台：' + (platform || '未识别') + '；原始链接：' + url +
+          (note ? '；补充说明：' + note : '') + '；采集时间：' + capturedAt,
+        text: body,
+        source: url + '（链接导入，前端演示解析）',
+        measure: '未知',
+        notice: '情况不明',
+        attach: '采集时间：' + capturedAt + (note ? '；备注：' + note : ''),
+        createdAt: new Date().toISOString(),
+        status: 'progress',
+        importMode: 'link',
+        records: [],
+        clues: null, dims: null, grade: null, review: null
+      };
+      c.clues = runClues(c);
+      c.dims = computeDims(c);
+      c.grade = suggestGrade(c);
+      addRecord(c, 'machine', '系统', '由链接导入创建案件「' + c.name + '」并完成机器研判（' + c.clues.length + ' 条线索）');
+      addRecord(c, 'human', '录入人', '原始链接：' + url + (pubTime ? '；发布时间：' + pubTime : '；发布时间未获取'));
+      state.cases.push(c);
+      setActive(c.id); saveCases();
+      toast('已创建案件「' + c.name + '」，识别线索 ' + activeClues(c).length + ' 条');
+      goto('clues');
+    });
+
     // 免责提示
     $('#noticeClose').addEventListener('click', function () { $('#noticeBar').style.display = 'none'; });
   }
+
+  /* ---------------- 链接导入：启发式解析 ---------------- */
+  function parseLinkHeuristic(url) {
+    var now = new Date();
+    var capturedAt = now.getFullYear() + '-' + pad2(now.getMonth() + 1) + '-' + pad2(now.getDate()) + ' ' +
+      pad2(now.getHours()) + ':' + pad2(now.getMinutes());
+    var platform = '未识别平台';
+    var host = '';
+    try { host = new URL(url).hostname.toLowerCase(); } catch (e) {}
+    if (host.indexOf('weibo') !== -1) platform = '微博';
+    else if (host.indexOf('thepaper') !== -1) platform = '澎湃新闻';
+    else if (host.indexOf('zhihu') !== -1) platform = '知乎';
+    else if (host.indexOf('xiaohongshu') !== -1 || host.indexOf('xhslink') !== -1) platform = '小红书';
+    else if (host.indexOf('douyin') !== -1 || host.indexOf('iesdouyin') !== -1) platform = '抖音';
+    else if (host.indexOf('bilibili') !== -1 || host.indexOf('b23') !== -1) platform = '哔哩哔哩';
+    else if (host.indexOf('sina') !== -1) platform = '新浪';
+    else if (host.indexOf('sohu') !== -1) platform = '搜狐';
+    else if (host.indexOf('163') !== -1) platform = '网易';
+    else if (host.indexOf('qq') !== -1) platform = '腾讯';
+    else if (host.indexOf('toutiao') !== -1 || host.indexOf('jinritoutiao') !== -1) platform = '今日头条';
+    else if (host.indexOf('cac.gov') !== -1) platform = '国家网信办';
+    else if (host.indexOf('court.gov') !== -1 || host.indexOf('rmfyb') !== -1) platform = '人民法院 / 最高法';
+    else if (host.indexOf('thepaper') === -1 && host.indexOf('.cn') !== -1) platform = '中文网站（未识别）';
+
+    var title = '关于该链接内容的研判需求（前端演示）';
+    var body = '前端演示版无法实际抓取网页内容，请在此粘贴页面正文或核心评论内容。\n\n如：“这种人就是人品有问题，别洗了。” “都去她学校堵她。”';
+
+    return {
+      url: url,
+      platform: platform,
+      title: title + ' · ' + platform + '链接',
+      pubTime: '',
+      body: body,
+      capturedAt: capturedAt
+    };
+  }
+
+  function pad2(n) { return n < 10 ? '0' + n : '' + n; }
 
   /* ---------------- 启动 ---------------- */
   loadCases();

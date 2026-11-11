@@ -106,75 +106,130 @@
           <h1>事件录入</h1>
           <p>仅填写已知信息，注意区分事实与推测；建议使用中性描述，不预设责任结论</p>
         </div>
-        <span class="req-note">* 为必填项</span>
       </div>
-      <form class="panel form-panel" id="eventForm" novalidate>
-        <div class="form-grid">
-          <div class="field span-2">
-            <label for="fName">事件名称 <b>*</b></label>
-            <input id="fName" type="text" maxlength="60" placeholder="例：某高校图书馆占座争议事件（虚构演示）">
-            <em class="f-err" data-for="fName">请填写事件名称</em>
+      <!-- 两个入口 -->
+      <div class="import-tabs">
+        <button class="import-tab active" data-import="manual">✍ 手动填写</button>
+        <button class="import-tab" data-import="link">🔗 链接导入</button>
+      </div>
+      <!-- 入口 A：手动填写 -->
+      <div class="import-panel active" id="importManual">
+        <form class="panel form-panel" id="eventForm" novalidate>
+          <div class="form-grid">
+            <div class="field span-2">
+              <label for="fName">事件名称 <b>*</b></label>
+              <input id="fName" type="text" maxlength="60" placeholder="例：某高校图书馆占座争议事件（虚构演示）">
+              <em class="f-err" data-for="fName">请填写事件名称</em>
+            </div>
+            <div class="field">
+              <label for="fTime">事件发生/发现时间 <b>*</b></label>
+              <input id="fTime" type="datetime-local">
+              <em class="f-err" data-for="fTime">请选择时间</em>
+            </div>
+            <div class="field">
+              <label for="fFact">当前事实状态 <b>*</b></label>
+              <select id="fFact">
+                <option value="">请选择…</option>
+                <option>尚未核实</option>
+                <option>部分核实</option>
+                <option>已有权威信息</option>
+                <option>存在争议</option>
+              </select>
+              <em class="f-err" data-for="fFact">请选择事实状态</em>
+            </div>
+            <div class="field span-2">
+              <label for="fBg">事件背景 <b>*</b></label>
+              <textarea id="fBg" rows="4" placeholder="仅填写已知信息，区分事实与推测；不支持的内容请写入“待核实问题”"></textarea>
+              <em class="f-err" data-for="fBg">请填写事件背景</em>
+            </div>
+            <div class="field span-2">
+              <label for="fText">待研判文本 <b>*</b> <span class="label-tip">粘贴公开文本或经脱敏的模拟文本</span></label>
+              <textarea id="fText" rows="8" placeholder="粘贴需要研判的公开评论、帖子等文本…"></textarea>
+              <em class="f-err" data-for="fText">请粘贴待研判文本</em>
+            </div>
+            <div class="field span-2">
+              <label for="fSource">信息来源 <b>*</b> <span class="label-tip">网址 / 来源说明 / 材料名称；来源不代表其内容当然真实</span></label>
+              <input id="fSource" type="text" placeholder="例：某公开社交平台截图（脱敏）/ 学校通报链接">
+              <em class="f-err" data-for="fSource">请填写信息来源</em>
+            </div>
+            <div class="field">
+              <label for="fMeasure">已有平台措施</label>
+              <select id="fMeasure">
+                <option value="未知">未知</option>
+                <option>未处理</option>
+                <option>已提示</option>
+                <option>已审核</option>
+                <option>已限制传播</option>
+                <option>其他</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="fNotice">通知/投诉情况</label>
+              <select id="fNotice">
+                <option>未收到</option>
+                <option>已收到</option>
+                <option>情况不明</option>
+              </select>
+            </div>
+            <div class="field span-2">
+              <label for="fAttach">附件或证据说明</label>
+              <input id="fAttach" type="text" placeholder="第一版仅记录文件名称或来源摘要">
+            </div>
           </div>
-          <div class="field">
-            <label for="fTime">事件发生/发现时间 <b>*</b></label>
-            <input id="fTime" type="datetime-local">
-            <em class="f-err" data-for="fTime">请选择时间</em>
+          <div class="form-actions">
+            <button type="button" class="btn btn-plain" id="btnSaveDraft">保存草稿</button>
+            <button type="submit" class="btn btn-primary">保存并开始研判 →</button>
           </div>
-          <div class="field">
-            <label for="fFact">当前事实状态 <b>*</b></label>
-            <select id="fFact">
-              <option value="">请选择…</option>
-              <option>尚未核实</option>
-              <option>部分核实</option>
-              <option>已有权威信息</option>
-              <option>存在争议</option>
-            </select>
-            <em class="f-err" data-for="fFact">请选择事实状态</em>
+        </form>
+      </div>
+      <!-- 入口 B：链接导入 -->
+      <div class="import-panel" id="importLink">
+        <div class="panel">
+          <div class="panel-head"><h2>步骤 1 · 粘贴公开网页链接</h2><span class="hint">微博、新闻、知乎、小红书等公开链接均可</span></div>
+          <div class="link-input-row">
+            <input id="linkUrl" type="url" placeholder="https://weibo.com/... 或 https://www.thepaper.cn/newsDetail_forward_..." />
+            <button class="btn btn-primary" id="btnParseLink">解析链接</button>
           </div>
-          <div class="field span-2">
-            <label for="fBg">事件背景 <b>*</b></label>
-            <textarea id="fBg" rows="4" placeholder="仅填写已知信息，区分事实与推测；不支持的内容请写入“待核实问题”"></textarea>
-            <em class="f-err" data-for="fBg">请填写事件背景</em>
+          <p class="link-tip">💡 无法访问的网页、需要登录的链接将自动切换为手动导入模式；前端演示版不实际抓取，采用启发式提取模拟流程。</p>
+        </div>
+        <div class="panel link-result" id="linkResult" style="display:none">
+          <div class="panel-head"><h2>步骤 2 · 确认 / 补充解析结果</h2><span class="hint">系统自动提取 vs 用户手动补充分别标记，方便后续核查</span></div>
+          <div class="parse-grid">
+            <div class="field span-2">
+              <label>网页标题 <span class="parse-tag tag-auto">自动提取</span></label>
+              <input id="parsedTitle" type="text" />
+            </div>
+            <div class="field">
+              <label>发布平台/来源 <span class="parse-tag tag-auto">自动提取</span></label>
+              <input id="parsedPlatform" type="text" />
+            </div>
+            <div class="field">
+              <label>发布时间 <span class="parse-tag tag-unknown">未获取</span></label>
+              <input id="parsedPubTime" type="text" placeholder="如无时间信息请留空，研判时标注为'未获取'" />
+            </div>
+            <div class="field span-2">
+              <label>正文内容 <span class="parse-tag tag-auto">自动提取</span></label>
+              <textarea id="parsedBody" rows="8"></textarea>
+            </div>
+            <div class="field span-2">
+              <label>原始链接 <span class="parse-tag tag-auto">自动保留</span></label>
+              <input id="parsedUrl" type="text" readonly />
+            </div>
+            <div class="field span-2">
+              <label>采集时间 <span class="parse-tag tag-auto">自动记录</span></label>
+              <input id="parsedCapturedAt" type="text" readonly />
+            </div>
+            <div class="field span-2">
+              <label>补充说明（可选）<span class="parse-tag tag-user">用户补充</span></label>
+              <textarea id="parsedNote" rows="2" placeholder="页面需要登录、只截取到部分内容等情况说明"></textarea>
+            </div>
           </div>
-          <div class="field span-2">
-            <label for="fText">待研判文本 <b>*</b> <span class="label-tip">粘贴公开文本或经脱敏的模拟文本</span></label>
-            <textarea id="fText" rows="8" placeholder="粘贴需要研判的公开评论、帖子等文本…"></textarea>
-            <em class="f-err" data-for="fText">请粘贴待研判文本</em>
-          </div>
-          <div class="field span-2">
-            <label for="fSource">信息来源 <b>*</b> <span class="label-tip">网址 / 来源说明 / 材料名称；来源不代表其内容当然真实</span></label>
-            <input id="fSource" type="text" placeholder="例：某公开社交平台截图（脱敏）/ 学校通报链接">
-            <em class="f-err" data-for="fSource">请填写信息来源</em>
-          </div>
-          <div class="field">
-            <label for="fMeasure">已有平台措施</label>
-            <select id="fMeasure">
-              <option value="未知">未知</option>
-              <option>未处理</option>
-              <option>已提示</option>
-              <option>已审核</option>
-              <option>已限制传播</option>
-              <option>其他</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="fNotice">通知/投诉情况</label>
-            <select id="fNotice">
-              <option>未收到</option>
-              <option>已收到</option>
-              <option>情况不明</option>
-            </select>
-          </div>
-          <div class="field span-2">
-            <label for="fAttach">附件或证据说明</label>
-            <input id="fAttach" type="text" placeholder="第一版仅记录文件名称或来源摘要">
+          <div class="form-actions">
+            <button class="btn btn-plain" id="btnReparseLink">← 重新粘贴</button>
+            <button class="btn btn-primary" id="btnLinkToForm">确认并进入研判 →</button>
           </div>
         </div>
-        <div class="form-actions">
-          <button type="button" class="btn btn-plain" id="btnSaveDraft">保存草稿</button>
-          <button type="submit" class="btn btn-primary">保存并开始研判 →</button>
-        </div>
-      </form>
+      </div>
     </section>
 
     <!-- ========== 03 线索识别 ========== -->
@@ -228,13 +283,43 @@
           <p>条文来自可核验的规则库，点击可查看官方来源；系统不自动给出违法结论</p>
         </div>
       </div>
+      <!-- 模块一：涉及的法律问题 -->
       <div class="panel">
-        <div class="panel-head"><h2>可能相关的法律规范</h2><span class="hint">由命中的线索类别匹配</span></div>
+        <div class="panel-head"><h2>一、可能涉及的法律问题</h2><span class="hint">由命中的线索类别匹配，仅作提示</span></div>
+        <div class="legal-issues" id="legalIssues"></div>
+      </div>
+      <!-- 模块二：法律依据与适用条件 -->
+      <div class="panel">
+        <div class="panel-head"><h2>二、对应法律依据与适用条件</h2><span class="hint">不只是罗列法条，关注其适用前提</span></div>
         <div class="law-list" id="lawList"></div>
       </div>
+      <!-- 模块三：待核实的关键事实 -->
       <div class="panel">
-        <div class="panel-head"><h2>与本案件相关的适用提示</h2></div>
-        <ul class="law-tips" id="lawTips"></ul>
+        <div class="panel-head"><h2>三、还需要核实的关键事实</h2><span class="hint">清单未穷尽，须结合个案补充</span></div>
+        <ul class="fact-checklist" id="factChecklist"></ul>
+      </div>
+      <!-- 模块四：初步法律分析 -->
+      <div class="panel">
+        <div class="panel-head"><h2>四、初步法律分析</h2><span class="hint">基于现有材料的方向性判断，非结论</span></div>
+        <div class="legal-analysis" id="legalAnalysis"></div>
+      </div>
+      <!-- 模块五：建议措施 -->
+      <div class="panel">
+        <div class="panel-head"><h2>五、建议采取的措施</h2><span class="hint">与风险级别相称，优先可逆措施</span></div>
+        <ul class="measure-list" id="measureList"></ul>
+      </div>
+      <!-- 模块六：四类处置提示 -->
+      <div class="panel">
+        <div class="panel-head"><h2>六、四类处置提示</h2><span class="hint">系统辅助建议，非法律责任等级</span></div>
+        <div class="disposal-grid" id="disposalGrid"></div>
+      </div>
+      <!-- 模块七：法律边界说明 -->
+      <div class="panel panel-warn">
+        <div class="panel-head"><h2>⚠ 法律边界</h2></div>
+        <div class="legal-boundary">
+          <p>四类处置提示是系统内部的辅助建议，<b>不是法律规定的责任等级</b>。系统不能自动认定内容违法、侵权成立或平台应承担责任，也不能自动删除内容。</p>
+          <p>任何措施的实施都应以<b>经核实的事实</b>为基础，由<b>授权人员</b>在<b>留存完整记录</b>的前提下执行，并保障用户申诉与复核渠道。</p>
+        </div>
       </div>
       <div class="step-actions">
         <button class="btn btn-plain" data-goto="dims">← 四维研判</button>

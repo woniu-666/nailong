@@ -335,13 +335,98 @@ svg { display: block; }
 .law-item p b { color: var(--ink); }
 .law-link { font-size: 12.5px; color: var(--navy-500); display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; }
 .law-link:hover { text-decoration: underline; }
-.law-tips { display: grid; gap: 10px; }
-.law-tips li {
-  font-size: 13.5px; color: var(--ink-2); background: #F6F8FC; border-radius: 10px;
-  padding: 10px 14px; list-style: none; position: relative; padding-left: 30px;
+
+/* 模块一：法律问题 */
+.legal-issues { display: grid; gap: 10px; }
+.issue-card {
+  background: #FCFDFE; border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px;
 }
-.law-tips li::before { content: "§"; position: absolute; left: 12px; top: 8px; color: var(--gold); font-weight: 700; }
-.law-tips li b { color: var(--ink); }
+.issue-key { font-size: 13px; font-weight: 600; padding: 3px 10px; background: #F8FAFD; border-radius: 4px; display: inline-block; margin-bottom: 8px; }
+.issue-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 4px; }
+.issue-list li { font-size: 13px; color: var(--ink-2); padding-left: 14px; position: relative; }
+.issue-list li::before { content: '•'; position: absolute; left: 0; color: var(--gold); }
+
+/* 模块三：待核实事实 */
+.fact-checklist { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.fact-checklist li {
+  font-size: 13.5px; color: var(--ink); background: #F6F8FC; border-radius: 10px;
+  padding: 10px 16px; position: relative; padding-left: 110px;
+}
+.fcat { font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: 999px; position: absolute; left: 14px; top: 10px; }
+.fcat-key { background: #F7EEDB; color: #8A6A2E; }
+.fcat-gen { background: #E8EEFC; color: var(--navy-500); }
+
+/* 模块四：初步法律分析 */
+.legal-analysis { display: grid; gap: 14px; }
+.analysis-block h4 { font-size: 13px; color: var(--navy-500); font-weight: 600; margin-bottom: 6px; }
+.analysis-block p { font-size: 13.5px; color: var(--ink-2); line-height: 1.85; margin-bottom: 8px; }
+.analysis-block p b { color: var(--ink); }
+
+/* 模块五：建议措施 */
+.measure-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.measure-list li {
+  font-size: 13.5px; color: var(--ink); background: #FCFDFE; border: 1px solid var(--line);
+  border-radius: 10px; padding: 10px 16px; position: relative; padding-left: 42px;
+}
+.m-idx {
+  position: absolute; left: 12px; top: 8px; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--navy-500); color: #fff; font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* 模块六：四类处置提示 */
+.disposal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.disposal-card {
+  border: 2px solid transparent; border-radius: 12px; padding: 14px 18px;
+  background: var(--dis-bg); border-color: var(--dis-color); transition: transform .2s, box-shadow .2s;
+}
+.disposal-card.active { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(0,0,0,.1); }
+.dis-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.dis-head h3 { font-size: 14.5px; color: var(--dis-color); font-weight: 700; }
+.dis-tag {
+  font-size: 11px; background: var(--dis-color); color: #fff; border-radius: 999px;
+  padding: 2px 10px; font-weight: 600;
+}
+.dis-desc { font-size: 13px; color: var(--ink); margin-bottom: 8px; line-height: 1.6; }
+.dis-clause { font-size: 12px; color: var(--ink-2); background: rgba(255,255,255,.6); border-radius: 6px; padding: 6px 10px; }
+
+/* 模块七：法律边界 */
+.panel-warn { border-left: 4px solid var(--gold) !important; }
+.legal-boundary p { font-size: 13.5px; color: var(--ink-2); line-height: 1.85; margin-bottom: 10px; }
+.legal-boundary p b { color: var(--ink); }
+
+/* ---------- 链接导入 ---------- */
+.import-tabs { display: flex; gap: 0; background: #F6F8FC; border-radius: 10px; padding: 4px; margin-bottom: 16px; }
+.import-tab {
+  flex: 1; padding: 10px 16px; border: none; background: transparent; font-size: 14px;
+  color: var(--ink-2); border-radius: 8px; cursor: pointer; transition: all .15s;
+  font-weight: 500;
+}
+.import-tab:hover { color: var(--ink); }
+.import-tab.active { background: #fff; color: var(--navy-500); box-shadow: 0 1px 3px rgba(0,0,0,.08); font-weight: 600; }
+.import-panel { display: none; }
+.import-panel.active { display: block; }
+
+.link-input-row { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.link-input-row input { flex: 1; min-width: 280px; }
+.link-tip { font-size: 12.5px; color: var(--ink-3); margin: 0; line-height: 1.6; }
+
+.parse-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 12px; }
+.parse-grid .field { display: flex; flex-direction: column; }
+.parse-grid .field > label { font-size: 12.5px; color: var(--ink-2); font-weight: 500; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.parse-tag {
+  font-size: 10.5px; font-weight: 600; padding: 1px 9px; border-radius: 999px;
+}
+.parse-tag.tag-auto { background: #E8EEFC; color: var(--navy-500); }
+.parse-tag.tag-unknown { background: #FFF0E0; color: #C47A32; }
+.parse-tag.tag-user { background: #F7EEDB; color: #8A6A2E; }
+
+@media (max-width: 600px) {
+  .disposal-grid { grid-template-columns: 1fr; }
+  .parse-grid { grid-template-columns: 1fr; }
+  .fact-checklist li { padding-left: 14px; }
+  .fcat { position: static; display: inline-block; margin-right: 6px; margin-bottom: 6px; }
+}
 
 /* ---------- 分级 ---------- */
 .grade-suggest { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
